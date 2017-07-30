@@ -17,11 +17,36 @@ express.response.sendOk = function(result) {
   serverResponse.sendOk(this, {result});
 };
 
-let api = express.Router();
+express.response.sendError = function(result) {
+  serverResponse.sendServerError(this, {result});
+};
 
-api.get('/', hydraExpress.validateJwtToken(),
+let api = express.Router();
+//hydraExpress.validateJwtToken()
+api.get('/',
 (req, res) => {
   res.sendOk({greeting: 'Welcome to Hydra Express!'});
 });
+
+
+
+api.get('/fetch-json',
+  (req, res) => {
+  let message = hydra.createUMFMessage({
+    to: 'mserviceinvoker-service:[get]/v1/mServiceInvoker/return-json',
+    from: 'mservice-service:/',
+    body: {
+      id:req.query.id
+    }
+  });
+return hydra.makeAPIRequest(message)
+    .then((response) => {
+    res.sendOk({msg:response});
+})
+ .catch(err => {
+  res.sendError(err);
+  });
+});
+
 
 module.exports = api;
